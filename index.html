@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposta de Namoro</title>
+    <style>
+        /* Estilos CSS */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: black;  /* Fundo preto */
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .pergunta {
+            font-size: 32px;  /* Estilo maior */
+            font-weight: bold;  /* Deixar a pergunta em negrito */
+            color: white;  /* Texto branco */
+            margin-bottom: 30px;  /* Margem maior para o espaço entre a pergunta e os botões */
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3);  /* Sombra no texto para dar um efeito */
+        }
+
+        /* Flexbox para os botões ficarem lado a lado */
+        .botoes {
+            display: flex;
+            justify-content: center;
+            gap: 20px;  /* Espaço de 20px entre os botões */
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            cursor: pointer;
+            background-color: #ff4c4c;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            transition: transform 0.2s ease;  /* A transição suave */
+        }
+
+        #sim {
+            background-color: #4CAF50;
+        }
+
+        #sim:hover {
+            background-color: #45a049;  /* Cor mais escura ao passar o mouse */
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            .pergunta {
+                font-size: 24px;  /* Diminui o tamanho da pergunta em telas menores */
+            }
+
+            button {
+                padding: 12px 25px;
+                font-size: 18px;
+            }
+
+            #sim {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="pergunta" id="pergunta">
+        Quer namorar comigo?
+    </div>
+    
+    <div class="botoes">
+        <button id="sim">Sim</button>
+        <button id="nao">Não</button>
+    </div>
+
+    <script>
+        // Script JavaScript para mover o botão "Não" de forma aleatória
+        const botaoNao = document.getElementById('nao');
+
+        botaoNao.addEventListener('mouseover', function() {
+            let x = Math.random() * 600 - 300;  // Move aleatoriamente até 300px no eixo X
+            let y = Math.random() * 600 - 300;  // Move aleatoriamente até 300px no eixo Y
+            botaoNao.style.transform = `translate(${x}px, ${y}px)`;  // Movimento de até 300px
+        });
+
+        // Variável para aumentar o tamanho do botão "Sim"
+        let tamanhoSim = 1;
+
+        // Quando o botão "Sim" for clicado, mudar a pergunta, abrir nova guia e aumentar o tamanho do botão
+        const botaoSim = document.getElementById('sim');
+        const pergunta = document.getElementById('pergunta');
+        
+        botaoSim.addEventListener('click', function() {
+            // Alterar a pergunta
+            pergunta.innerHTML = "Que bom que usou seu livre arbítrio!";
+            
+            // Abrir a nova guia com o link
+            window.open("https://in.pinterest.com/pin/118289927708653386/", "_blank");  // Abre o link em uma nova guia
+
+            // Aumentar o tamanho do botão "Sim"
+            tamanhoSim *= 1.2;  // Aumenta o tamanho do botão em 20% a cada clique
+            if (tamanhoSim > 2) tamanhoSim = 2;  // Limita o tamanho máximo do botão a 2x do tamanho original
+            botaoSim.style.transform = `scale(${tamanhoSim})`;  // Aplica o aumento no tamanho do botão
+        });
+    </script>
+
+</body>
+</html>
