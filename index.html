@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Um Pedido Especial</title>
+    <style>
+        /* (Todo o CSS anterior permanece o mesmo) */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Poppins', sans-serif; background-color: #1a1a1a; }
+        .screen { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: opacity 0.5s ease-in-out; background-color: #eedde0; }
+        .screen.visible { opacity: 1; visibility: visible; }
+        @keyframes fadeIn { to { opacity: 1; } }
+        #music-toggle-btn { position: fixed; top: 20px; left: 20px; width: 50px; height: 50px; background-color: #e78ea6; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 1000; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); transition: transform 0.3s ease; }
+        #music-toggle-btn:hover { transform: scale(1.1); }
+        #music-toggle-btn svg { width: 24px; height: 24px; fill: white; }
+        #music-toggle-btn .pause-icon { display: none; }
+        #music-toggle-btn.playing .play-icon { display: none; }
+        #music-toggle-btn.playing .pause-icon { display: block; }
+        .opening-heart { width: 80px; height: 80px; color: #fff; position: absolute; animation: heartGrowAndFade 1.5s ease-in-out forwards; }
+        @keyframes heartGrowAndFade { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+        @keyframes pulseButton { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        #space-button { background-color: #e78ea6; color: white; border: none; padding: 15px 40px; border-radius: 50px; font-size: 1.2em; font-weight: bold; letter-spacing: 1px; cursor: pointer; user-select: none; opacity: 0; position: relative; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); animation: fadeIn 1s forwards 1s, pulseButton 2s ease-in-out infinite 1.5s; transition: all 0.3s ease-in-out; }
+        #space-button:hover { transform: scale(1.08) !important; box-shadow: 0 6px 20px rgba(183, 91, 122, 0.25); }
+        .progress-container { width: 50%; max-width: 400px; height: 15px; background-color: #fff; border-radius: 10px; margin-top: 80px; position: relative; display: none; }
+        #progress-bar { width: 0%; height: 100%; background-color: #e78ea6; border-radius: 10px; transition: width 0.1s linear; }
+        .heart-particle { position: absolute; font-size: 24px; color: #e78ea6; pointer-events: none; user-select: none; opacity: 1; will-change: transform; }
+        .story-title { position: absolute; top: 10%; color: #333; font-size: 2em; }
+        .photo-set { display: flex; justify-content: center; align-items: center; gap: 40px; position: absolute; width: 100%; opacity: 0; transition: opacity 0.5s ease-in-out; }
+        .photo-set.active { opacity: 1; }
+        .polaroid { background-color: white; padding: 15px 15px 50px 15px; box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2); text-align: center; color: #333; position: relative; }
+        .polaroid img.photo-content { width: 200px; height: 200px; object-fit: cover; }
+        .polaroid p { margin-top: 15px; font-size: 1.1em; }
+        .polaroid:nth-child(1) { transform: rotate(-5deg); }
+        .polaroid:nth-child(2) { transform: rotate(2deg); margin-top: -20px; }
+        .polaroid:nth-child(3) { transform: rotate(7deg); }
+        .pin { position: absolute; width: 30px; height: 30px; top: -12px; left: 50%; transform: translateX(-50%) rotate(10deg); z-index: 10; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3)); }
+        .scrubber-container { position: absolute; bottom: 10%; width: 60%; max-width: 600px; text-align: center; }
+        .scrubber-container p { color: #555; margin-bottom: 20px; }
+        #scrubber { width: 100%; height: 30px; position: relative; cursor: pointer; }
+        #scrubber-track { position: absolute; width: 100%; height: 2px; background-color: rgba(255, 255, 255, 0.7); top: 50%; transform: translateY(-50%); }
+        #scrubber-progress { position: absolute; width: 0; height: 2px; background-color: #e78ea6; top: 50%; transform: translateY(-50%); }
+        #scrubber-thumb { position: absolute; left: 0; top: 50%; transform: translate(-50%, -50%); width: 28px; height: 28px; background-color: #e78ea6; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        #scrubber-thumb svg { width: 16px; height: 16px; color: white; }
+        .scrubber-tick { position: absolute; top: 50%; transform: translateY(-50%); width: 2px; height: 10px; background-color: rgba(255, 255, 255, 0.7); }
+        .proposal-text { color: #333; font-family: 'Dancing Script', cursive; font-size: 4em; text-align: center; }
+        .options { margin-top: 50px; display: flex; gap: 30px; justify-content: center; align-items: center; }
+        .btn { padding: 12px 35px; font-size: 1.8em; font-family: 'Dancing Script', cursive; cursor: pointer; border: none; border-radius: 50px; transition: all 0.3s ease-in-out; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        .btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); }
+        #yes-btn { background-color: #b8e0d2; color: #365c4f; }
+        #no-btn { background-color: #f4c7c3; color: #a94442; }
+        #no-btn.transformed-to-yes { background-color: #b8e0d2; color: #365c4f; }
+        #final-screen { background-color: #0078d7; justify-content: flex-start; align-items: flex-start; padding: 5%; font-family: 'Courier Prime', monospace; color: #fff; }
+        #final-screen h1 { font-size: 8em; font-weight: normal; }
+        #final-screen p { margin-top: 30px; font-size: 1.5em; line-height: 1.6; }
+        #again-btn { margin-top: 40px; padding: 12px 35px; font-size: 1.8em; font-family: 'Dancing Script', cursive; background: transparent; border: 2px solid white; color: white; border-radius: 50px; cursor: pointer; transition: all 0.3s ease-in-out; }
+        #again-btn:hover { background-color: white; color: #0078d7; transform: scale(1.05); }
+    </style>
+</head>
+<body>
+    <div id="music-toggle-btn">
+        <svg class="play-icon" viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg>
+        <svg class="pause-icon" viewBox="0 0 24 24"><path d="M14,19H18V5H14M6,19H10V5H6V19Z"></path></svg>
+    </div>
+    <audio id="background-music" src="musica/Logo Eu.mp3" loop></audio>
+
+    <div id="loading-screen" class="screen visible">
+        <svg class="opening-heart" viewBox="0 0 24 24"><path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z" /></svg>
+        <div id="space-button">ESPAÇO</div>
+        <div class="progress-container"><div id="progress-bar"></div></div>
+    </div>
+    
+    <div id="story-screen" class="screen">
+        <h1 class="story-title">Amor é...</h1>
+        <!-- =================================================================================== -->
+        <!-- ======================= ÁREA DE EDIÇÃO DAS FOTOS E ALFINETES ====================== -->
+        <!-- =================================================================================== -->
+        <div class="photo-set active">
+            <div class="polaroid"><img class="pin" src="fotos/pino1.png"><img class="photo-content" src="fotos/teste.png"><p>Você..</p></div>
+            <div class="polaroid"><img class="pin" src="fotos/pino1.png"><img class="photo-content" src="fotos/FOTO_AQUI_2.jpg"><p>me..</p></div>
+            <div class="polaroid"><img class="pin" src="fotos/pino1.png"><img class="photo-content" src="fotos/FOTO_AQUI_3.jpg"><p>completa.</p></div>
+        </div>
+        <div class="photo-set">
+            <div class="polaroid"><img class="pin" src="fotos/pino1.png"><img class="photo-content" src="fotos/FOTO_AQUI_4.jpg"><p>Me faz..</p></div>
+            <div class="polaroid"><img class="pin" src="fotos/pino1.png"><img class="photo-content" src="fotos/FOTO_AQUI_5.jpg"><p>muito mais..</p></div>
+            <div class="polaroid"><img class="pin" src="fotos/pino1.png"><img class="photo-content" src="fotos/FOTO_AQUI_6.jpg"><p>feliz.</p></div>
+        </div>
+        <div class="photo-set">
+            <div class="polaroid"><img class="pin" src="fotos/pino1.png"><img class="photo-content" src="fotos/FOTO_AQUI_7.jpg"><p>O motivo..</p></div>
+            <div class="polaroid"><img class="pin" src="fotos/pino1.png"><img class="photo-content" src="fotos/FOTO_AQUI_8.jpg"><p>do meu..</p></div>
+            <div class="polaroid"><img class="pin" src="fotos/pino1.png"><img class="photo-content" src="fotos/FOTO_AQUI_9.jpg"><p>sorriso.</p></div>
+        </div>
+        <div class="photo-set">
+            <div class="polaroid"><img class="pin" src="fotos/pino1.png"><img class="photo-content" src="fotos/FOTO_AQUI_10.jpg"><p>Quero muito..</p></div>
+            <div class="polaroid"><img class="pin" src="fotos/pino1.png"><img class="photo-content" src="fotos/FOTO_AQUI_11.jpg"><p>te fazer..</p></div>
+            <div class="polaroid"><img class="pin" src="fotos/pino1.png"><img class="photo-content" src="fotos/FOTO_AQUI_12.jpg"><p>um pedido.</p></div>
+        </div>
+        <!-- =================================================================================== -->
+        <!-- ======================= FIM DA ÁREA DE EDIÇÃO ===================================== -->
+        <!-- =================================================================================== -->
+        <div class="scrubber-container">
+            <p>Um pouco dos nosso momentos </p>
+            <div id="scrubber">
+                <div id="scrubber-track"></div> <div id="scrubber-progress"></div>
+                <div id="scrubber-thumb"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z" /></svg></div>
+            </div>
+        </div>
+    </div>
+    <div id="proposal-screen" class="screen"></div> <div id="final-screen" class="screen"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- ELEMENTOS DA DOM ---
+        const screens = { loading: document.getElementById('loading-screen'), story: document.getElementById('story-screen'), proposal: document.getElementById('proposal-screen'), final: document.getElementById('final-screen') };
+        const musicToggleBtn = document.getElementById('music-toggle-btn');
+        const backgroundMusic = document.getElementById('background-music');
+        const spaceButton = document.getElementById('space-button');
+        const openingHeart = document.querySelector('.opening-heart');
+        const progressContainer = document.querySelector('.progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const photoSets = document.querySelectorAll('.photo-set');
+        const scrubber = document.getElementById('scrubber');
+        const scrubberProgress = document.getElementById('scrubber-progress');
+        const scrubberThumb = document.getElementById('scrubber-thumb');
+        
+        let yesBtn, noBtn, againBtn; // Serão criados depois
+        let progress = 0; let decayInterval; let isDragging = false; let hearts = []; const GRAVITY = 0.3;
+
+        // --- FUNÇÕES DE LÓGICA ---
+        function switchScreen(screenToShow) { Object.values(screens).forEach(s => s.classList.remove('visible')); screenToShow.classList.add('visible'); }
+        function acceptProposal() { switchScreen(screens.final); }
+        
+        function createHeartParticle() {
+            const heartEl = document.createElement('div'); heartEl.innerHTML = '❤'; heartEl.classList.add('heart-particle'); spaceButton.appendChild(heartEl);
+            hearts.push({ el: heartEl, x: (Math.random() - 0.5) * 50, y: (Math.random() - 0.5) * 20, vx: (Math.random() - 0.5) * 6, vy: -10 - (Math.random() * 5), rot: (Math.random() - 0.5) * 360, rotV: (Math.random() - 0.5) * 10, opacity: 1 });
+        }
+        function animateHearts() {
+            hearts.forEach((h, i) => {
+                h.vy += GRAVITY; h.x += h.vx; h.y += h.vy; h.rot += h.rotV; h.opacity -= 0.02;
+                if (h.opacity <= 0) { h.el.remove(); hearts.splice(i, 1); } 
+                else { h.el.style.transform = `translate(${h.x}px, ${h.y}px) rotate(${h.rot}deg)`; h.el.style.opacity = h.opacity; }
+            });
+            requestAnimationFrame(animateHearts);
+        }
+        
+        function updateProgressBar() {
+            if (progress < 0) progress = 0; if (progress > 100) progress = 100;
+            progressBar.style.width = `${progress}%`;
+            if (progress >= 100) {
+                clearInterval(decayInterval);
+                window.removeEventListener('keydown', handleLoadingInteraction); spaceButton.removeEventListener('mousedown', handleLoadingInteraction);
+                setTimeout(() => switchScreen(screens.story), 500);
+            }
+        }
+        
+        function handleLoadingInteraction(e) { if (e.type === 'keydown' && e.code !== 'Space') return; e.preventDefault(); progress += 4; createHeartParticle(); updateProgressBar(); }
+        
+        function startLoadingSequence() {
+            if (backgroundMusic.paused) {
+                let playPromise = backgroundMusic.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => musicToggleBtn.classList.add('playing')).catch(error => console.log("Autoplay foi bloqueado, esperando interação."));
+                }
+            }
+            openingHeart.style.display = 'none'; progressContainer.style.display = 'block';
+            decayInterval = setInterval(() => { progress -= 1; updateProgressBar(); }, 100);
+            window.addEventListener('keydown', handleLoadingInteraction); spaceButton.addEventListener('mousedown', handleLoadingInteraction);
+        }
+        
+        function updateScrubber(percentage) {
+            let p = Math.max(0, Math.min(100, percentage));
+            scrubberProgress.style.width = `${p}%`; scrubberThumb.style.left = `${p}%`;
+            photoSets.forEach(set => set.classList.remove('active'));
+            const activeIndex = Math.floor(p / 25.1);
+            if (photoSets[activeIndex]) photoSets[activeIndex].classList.add('active');
+            if (p >= 100) setTimeout(() => switchScreen(screens.proposal), 1000);
+        }
+        
+        function handleDrag(e) {
+            if (!isDragging) return;
+            const rect = scrubber.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const percentage = (x / rect.width) * 100;
+            updateScrubber(percentage);
+        }
+
+        // --- INICIALIZAÇÃO E EVENTOS ---
+        function initialize() {
+            [0, 25, 50, 75, 100].forEach(pos => { const tick = document.createElement('div'); tick.className = 'scrubber-tick'; tick.style.left = `${pos}%`; scrubber.appendChild(tick); });
+            screens.proposal.innerHTML = `<div class="proposal-text"><p>Aceita namorar comigo?</p></div><div class="options"></div>`;
+            yesBtn = document.createElement('button'); yesBtn.id = 'yes-btn'; yesBtn.className = 'btn'; yesBtn.textContent = 'Sim';
+            noBtn = document.createElement('button'); noBtn.id = 'no-btn'; noBtn.className = 'btn'; noBtn.textContent = 'Não';
+            screens.proposal.querySelector('.options').append(yesBtn, noBtn);
+            screens.final.innerHTML = `<h1>:)</h1><p>Depois de tudo isso, só espero que você saiba o quanto é<br>especial para mim e o quanto quero construir algo lindo ao<br>seu lado.</p>`;
+            againBtn = document.createElement('button'); againBtn.id = 'again-btn'; againBtn.className = 'btn'; againBtn.textContent = 'Again?';
+            screens.final.appendChild(againBtn);
+            
+            // Tenta dar autoplay na música
+            let playPromise = backgroundMusic.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => musicToggleBtn.classList.add('playing'))
+                         .catch(error => { console.log("Autoplay bloqueado. A música começará com a interação."); musicToggleBtn.classList.remove('playing'); });
+            }
+            
+            // Adiciona todos os listeners
+            musicToggleBtn.addEventListener('click', () => {
+                if (backgroundMusic.paused) { backgroundMusic.play(); } else { backgroundMusic.pause(); }
+                musicToggleBtn.classList.toggle('playing');
+            });
+            window.addEventListener('keydown', startLoadingSequence, { once: true }); spaceButton.addEventListener('click', startLoadingSequence, { once: true });
+            scrubber.addEventListener('mousedown', (e) => { isDragging = true; handleDrag(e); }); window.addEventListener('mousemove', handleDrag); window.addEventListener('mouseup', () => { isDragging = false; });
+            scrubber.addEventListener('touchstart', (e) => { isDragging = true; handleDrag(e); }, { passive: true }); window.addEventListener('touchmove', handleDrag); window.addEventListener('touchend', () => { isDragging = false; });
+            yesBtn.addEventListener('click', acceptProposal);
+            noBtn.addEventListener('mouseover', () => { noBtn.textContent = 'Sim'; noBtn.classList.add('transformed-to-yes'); noBtn.addEventListener('click', acceptProposal); });
+            noBtn.addEventListener('mouseout', () => { noBtn.textContent = 'Não'; noBtn.classList.remove('transformed-to-yes'); noBtn.removeEventListener('click', acceptProposal); });
+            againBtn.addEventListener('click', () => location.reload());
+            animateHearts();
+        }
+
+        initialize();
+    });
+</script>
+
+</body>
+</html>
